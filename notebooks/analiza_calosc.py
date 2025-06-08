@@ -218,10 +218,17 @@ plt.grid(alpha = 0.3)
 plt.show()
 
 # %% [markdown]
+# Skumulowane ryzyko śmierci zwiększa się z czasem, co jest całkowicie zasadne. Początkowo ten wzrost jest wysoki, co widzieliśmy również na krzywej przeżycia. Później tempo wzrostu ryzyka maleje.
+
+# %% [markdown]
 # ### Zmienne
 
 # %% [markdown]
 # #### 1. Zmienna określająca sposób leczenia - *rx*
+#
+# 1 - obserwacja
+#
+# 3 - terapia lewamizolem +5-FU
 
 # %%
 colon['rx'].value_counts()
@@ -267,6 +274,10 @@ result.print_summary()
 
 # %% [markdown]
 # #### 2. Zmienna określająca płeć - *sex*
+#
+# 0 - mężczyzna
+#
+# 1 - kobieta
 
 # %%
 colon['sex'].value_counts()
@@ -310,6 +321,8 @@ result.print_summary()
 
 # %% [markdown]
 # #### 3. Zmienna obstruct
+#
+# Określa, czy guz blokuje drożność jelita. Jeśli tak, to zmienna przyjmuje wartość 1, przeciwnie 0
 
 # %%
 colon['obstruct'].value_counts()
@@ -321,10 +334,10 @@ o = colon['obstruct'] == 0
 plt.figure(figsize=(12, 6))
 ax = plt.subplot(111)
 
-kmf.fit(durations=T[o], event_observed=E[o], label='Obstruct', alpha=0.05)
+kmf.fit(durations=T[o], event_observed=E[o], label='No obstruct', alpha=0.05)
 kmf.plot(ax=ax)
 
-kmf.fit(durations=T[~o], event_observed=E[~o], label='No obstruct', alpha = 0.05)
+kmf.fit(durations=T[~o], event_observed=E[~o], label='Obstruct', alpha = 0.05)
 kmf.plot(ax=ax)
 
 plt.grid(alpha = 0.3)
@@ -335,10 +348,10 @@ plt.grid(alpha = 0.3)
 plt.figure(figsize=(12, 6))
 ax = plt.subplot(111)
 
-naf.fit(durations=T[o], event_observed=E[o], label='Obstruct', alpha=0.05)
+naf.fit(durations=T[o], event_observed=E[o], label='No obstruct', alpha=0.05)
 naf.plot(ax=ax)
 
-naf.fit(durations=T[~o], event_observed=E[~o], label='No obstruct', alpha=0.05)
+naf.fit(durations=T[~o], event_observed=E[~o], label='Obstruct', alpha=0.05)
 naf.plot(ax=ax)
 
 plt.grid(alpha = 0.3)
@@ -347,6 +360,9 @@ plt.grid(alpha = 0.3)
 ## Log-Rank test
 result = lfl.statistics.multivariate_logrank_test(colon['time'], colon['obstruct'], colon['status'])
 result.print_summary()
+
+# %% [markdown]
+# Podobnie jak w przypadku płci, nie ma podstaw do odrzucenia hipotezy zerowej zakładającej identyczność krzywych przeżycia dla wszystkich kategorii, przy poziomie istotności 95%. Interesujące jest przycięcie dla kategorii No obstruct na wykresach wskazujące na to, że ostatni pacjent z tej kategorii został ocenzurowany wcześniej niż ostatni pacjent z kategorii Obstruct. Nie mamy szczegółowych informacji na temat oryginalnego badania, więc możemy jedynie snuć domysły na temat przyczyny takiego stanu rzeczy.
 
 # %% [markdown]
 # #### 4. Zmienna adhere
@@ -361,10 +377,10 @@ a = colon['adhere'] == 0
 plt.figure(figsize=(12, 6))
 ax = plt.subplot(111)
 
-kmf.fit(durations=T[a], event_observed=E[a], label='Adhere', alpha = 0.05)
+kmf.fit(durations=T[a], event_observed=E[a], label='No adhere', alpha = 0.05)
 kmf.plot(ax=ax)
 
-kmf.fit(durations=T[~a], event_observed=E[~a], label='No adhere', alpha = 0.05)
+kmf.fit(durations=T[~a], event_observed=E[~a], label='adhere', alpha = 0.05)
 kmf.plot(ax=ax)
 
 plt.grid(alpha = 0.3)
@@ -375,10 +391,10 @@ plt.grid(alpha = 0.3)
 plt.figure(figsize=(12, 6))
 ax = plt.subplot(111)
 
-naf.fit(durations=T[a], event_observed=E[a], label='Obstruct', alpha = 0.05)
+naf.fit(durations=T[a], event_observed=E[a], label='No adhere', alpha = 0.05)
 naf.plot(ax=ax)
 
-naf.fit(durations=T[~a], event_observed=E[~a], label='No obstruct', alpha = 0.05)
+naf.fit(durations=T[~a], event_observed=E[~a], label='Adheree', alpha = 0.05)
 naf.plot(ax=ax)
 
 plt.grid(alpha = 0.3)
@@ -387,6 +403,10 @@ plt.grid(alpha = 0.3)
 ## Log-Rank test
 result = lfl.statistics.multivariate_logrank_test(colon['time'], colon['adhere'], colon['status'])
 result.print_summary()
+
+# %% [markdown]
+# Odrzucenie hipotezy zerowej zakładającej identyczność krzywych przeżycia dla wszystkich kategorii, przy poziomie istotności 95%. Patrząc na wykres jest to dosyć interesujący wynik testu Log-Rank. Widoczny jest niewielki interwał na którym przedziały ufności się nie pokrywają. Krzywa przeżycia dla kategorii *adhere* leży wyraźnie niżej, ale ma ona również zdecydowanie szerszy przedział ufności. Oznacza to, że jesteśmy bardziej pewni kształtu krzywej przeżycia dla pacjentów z guzem nieadherentnym. 
+#
 
 # %% [markdown]
 # #### 5. Zmienna differ
@@ -422,10 +442,13 @@ result = lfl.statistics.multivariate_logrank_test(colon['time'], colon['adhere']
 result.print_summary()
 
 # %% [markdown]
+# Odrzucenie hipotezy zerowej zakładającej identyczność krzywych przeżycia dla wszystkich kategorii, przy poziomie istotności 95%. Dosyć wyraźnie widać to również na wykresie. Sam wykres poniekąd potwierdza nasze wcześniejsze przypuszczenia (przynajmniej wizualnie), że początkowe wysokie nachylenie krzywej przeżycia jest wynikiem sporej ilości śmierci pacjentów z nowotworami bardziej agresywnymi. Tutaj te nowotwory pośrednio określa zmienna differ = 3. Dokładnie oznacza ona najsłabsze zróżnicowanie komórek rakowych w rozumieniu takim, że nie są one podobne do zdrowych komórek. To najczęściej charakteryzuje bardziej agresywne nowotwory.
+
+# %% [markdown]
 # ## Analiza parametryczna
 
 # %% [markdown]
-# Analiza parametryczna w analizie przeżycia polega na założeniu określonego rozkładu prawdopodobieństwa czasu przeżycia, takiego jak rozkład wykładniczy, Weibulla, log-normalny czy gamma. Metody parametryczne pozwalają na oszacowanie funkcji przeżycia oraz ryzyka zdarzenia w oparciu o parametry rozkładu, co może zwiększyć precyzję estymacji, jeśli przyjęte założenia są spełnione. Przykładowo, model Weibulla jest często wykorzystywany ze względu na swoją elastyczność w modelowaniu różnych kształtów funkcji hazardu. W przeciwieństwie do metod nieparametrycznych, analiza parametryczna umożliwia także prognozowanie przeżycia poza obserwowanym zakresem danych. Jednak ważnym ograniczeniem tych metod jest konieczność poprawnego doboru rozkładu, gdyż błędne założenia mogą prowadzić do niewiarygodnych wyników.
+# Analiza parametryczna w analizie przeżycia polega na założeniu określonego rozkładu prawdopodobieństwa czasu przeżycia, takiego jak rozkład wykładniczy, Weibulla, log-normalny czy gamma. W przeciwieństwie do metod nieparametrycznych, analiza parametryczna umożliwia także prognozowanie przeżycia poza obserwowanym zakresem danych. Jednak ważnym ograniczeniem tych metod jest konieczność poprawnego doboru rozkładu, gdyż błędne założenia mogą prowadzić do niewiarygodnych wyników.
 #
 # W naszej analizie uwzględniamy 3 rozkłady:
 # - rozkład Weibulla
@@ -441,85 +464,25 @@ colon = pd.get_dummies(colon, columns = ['differ'], drop_first=True)
 colon.head()
 
 # %% [markdown]
-# ### 1. Weibull
+# ### 1. Wybór modelu
 
 # %%
-from lifelines import WeibullAFTFitter
+from lifelines import WeibullAFTFitter, LogNormalAFTFitter, LogLogisticAFTFitter
 
-wb_aft = WeibullAFTFitter()
+wb_aft, ln_aft, ll_aft = WeibullAFTFitter(), LogNormalAFTFitter(), LogLogisticAFTFitter()
 wb_aft.fit(colon, duration_col = 'time', event_col = 'status')
-wb_aft.print_summary()
+ln_aft.fit(colon, duration_col = 'time', event_col = 'status')
+ll_aft.fit(colon, duration_col = 'time', event_col = 'status')
 
-# %% [markdown]
-# statystycznie istotne zmienne: differ, rx, age_category_mid, age_catefory_old, differ_3, sex
-
-# %%
-wb_aft.fit(colon[['time', 'status', 'differ_3', 'rx', 'sex']], duration_col = 'time', event_col = 'status')
-wb_aft.print_summary()
-
-# %% [markdown]
-# #### Interpretacja modelu
-
-# %%
-wb_aft.plot()
-
-# %% [markdown]
-# Model pozwala przewidywać funkcje survival dla poszczególnych rekordów. Poniżej przedstawiona jest przykładowa funkcja dla pierwszego rekordu
-
-# %%
-colon.iloc[0:1]
-
-# %%
-plt.figure(figsize=(12, 6))
-plt.plot(wb_aft.predict_survival_function(colon.iloc[0:1]))
-plt.grid(alpha = 0.3)
-plt.title('Prognozowana funckja przeżycia dla pierwszego rekordu: Weibull AFT')
-plt.show()
-
-# %% [markdown]
-# ### Lon-normal AFT
-
-# %%
-from lifelines import LogNormalAFTFitter
-
-ln_aft = LogNormalAFTFitter()
-ln_aft.fit(colon, duration_col='time', event_col='status')
-ln_aft.print_summary()
-
-# %%
-ln_aft = LogNormalAFTFitter()
-ln_aft.fit(colon[['time', 'status', 'differ_3', 'rx', 'sex']], duration_col='time', event_col='status')
-ln_aft.print_summary()
-
-# %%
-plt.figure(figsize=(12, 6))
-plt.plot(ln_aft.predict_survival_function(colon.iloc[0:1]))
-plt.grid(alpha = 0.3)
-plt.title('Prognozowana funckja przeżycia dla pierwszego rekordu: Log-Normal AFT')
-plt.show()
-
-# %% [markdown]
-# ### Lon-logistic AFT
-
-# %%
-from lifelines import LogLogisticAFTFitter
-
-ll_aft = LogLogisticAFTFitter()
-ll_aft.fit(colon[['time', 'status', 'differ_3', 'rx', 'sex']], duration_col='time', event_col='status')
-ll_aft.print_summary()
-
-# %%
-plt.figure(figsize=(12, 6))
-plt.plot(ll_aft.predict_survival_function(colon.iloc[0:1]))
-plt.grid(alpha = 0.3)
-plt.title('Prognozowana funckja przeżycia dla pierwszego rekordu: Log-Logistic AFT')
-plt.show()
 
 # %% [markdown]
 # ### Porównanie modeli
 
 # %% [markdown]
-# Porównanie prognozowanych krzywych przeżycia
+# Porównanie prognozowanych krzywych przeżycia dla pierwszej obserwacji, czyli tej, dla tej z najwcześniejszym failure
+
+# %%
+colon.iloc[0:1]
 
 # %%
 plt.figure(figsize=(12, 6))
@@ -532,12 +495,177 @@ plt.legend()
 plt.show()
 
 # %% [markdown]
+# Estymowane wykresy pokazują, że pacjent względem całej populacji nie rokował dobrze. Jest to spodziewane, jako, że był to pacjent z najwcześniejszym failure.
+
+# %% [markdown]
 # Porównanie wartości funkcji największej wiarygodności
 
 # %%
 print(f"Weibull LL: {wb_aft.log_likelihood_}")
 print(f"Log-Normal LL: {ln_aft.log_likelihood_}")
 print(f"Log-Logistic LL: {ll_aft.log_likelihood_}")
+
+# %%
+models = {
+    'Weibull': wb_aft,
+    'LogNormal': ln_aft,
+    'LogLogistic': ll_aft
+}
+
+#obliczamy AIC modeli
+aic_values = {}
+c_values = {}
+for name, model in models.items():
+    aic_values[name] = model.AIC_
+    c_values[name] = model.concordance_index_
+
+for name, model in models.items():
+    print(f"\n{name} Podsumowanko:")
+    print(f"AIC: {model.AIC_}")
+    print(f"Concordance_index: {model.concordance_index_}")
+
+#najlepszy model
+best_model_name = min(aic_values, key=aic_values.get)
+best_model = models[best_model_name]
+print(f"\nNajlepszy model na podstawie AIC: {best_model_name} (AIC={aic_values[best_model_name]})")
+best_model_name = max(c_values, key=c_values.get)
+best_model = models[best_model_name]
+print(f"\nNajlepszy model na podstawie Concordance index: {best_model_name} (Concordance index={c_values[best_model_name]})")
+
+
+# %%
+c_values
+
+# %%
+models = {
+    'Weibull': 'Weibull',
+    'LogNormal': 'LogNormal',
+    'LogLogistic': 'LogLogistic'
+}
+aicdf=pd.DataFrame({
+    "Model": models,
+    "AIC": aic_values,
+})
+cdf=pd.DataFrame({
+    "Model": models,
+    "Concordance index": c_values,
+})
+# Wykres AIC
+plt.figure(figsize=(8, 5))
+plt.bar(aicdf['Model'], aicdf['AIC'], color='skyblue')
+plt.title('Porównanie modeli AFT - AIC')
+plt.ylabel('AIC')
+plt.xlabel('Model')
+plt.grid(axis='y')
+plt.ylim(4500, max(aicdf['AIC']) * 1.01)  
+plt.tight_layout()
+plt.show()
+
+# Wykres Concordance Index
+plt.figure(figsize=(8, 5))
+plt.bar(cdf['Model'], cdf['Concordance index'], color='lightgreen')
+plt.title('Porównanie modeli AFT - Concordance index')
+plt.ylabel('Concordance index')
+plt.xlabel('Model')
+plt.grid(axis='y')
+plt.ylim(0.6, 0.6150)  
+plt.tight_layout()
+plt.show()
+
+# %% [markdown]
+# Najlepszy model to model z rozkładem lognormalnym - najwyższy log likelihhod, najniższy AIC oraz najwyższy concordance. Przyjżymy się teraz nieco dokładniej temu modelowi.
+
+# %%
+ln_aft = LogNormalAFTFitter()
+ln_aft.fit(colon, duration_col='time', event_col='status')
+ln_aft.print_summary()
+
+# %%
+#wykres log(accelerated failure)
+fig, ax = plt.subplots(figsize=(10, 6))
+ln_aft.plot(ax=ax)
+plt.title("Współczynniki modelu Log-Normal AFT")
+plt.grid(True)
+plt.show()
+
+# %% [markdown]
+# statystycznie istotne zmienne: differ, rx, age_category_mid, age_catefory_old, differ_3, sex. Ale zostawiamy również zmienną obstruct
+
+# %%
+ln_aft = LogNormalAFTFitter()
+ln_aft.fit(colon[['time', 'status', 'differ_3', 'rx', 'sex', 'obstruct']], duration_col='time', event_col='status')
+ln_aft.print_summary()
+
+# %%
+#wykres log(accelerated failure)
+fig, ax = plt.subplots(figsize=(10, 6))
+ln_aft.plot(ax=ax)
+plt.title("Współczynniki modelu Log-Normal AFT")
+plt.grid(True)
+plt.show()
+
+# %%
+#mediana i średnia
+print(f"Mediana: {ln_aft.median_survival_time_}")
+print(f"Średnia: {ln_aft.mean_survival_time_}")
+
+# %%
+#funkcja przeżycia dla 1 obserwacji
+surv_func = ln_aft.predict_survival_function(colon.iloc[0:1])
+fig, ax = plt.subplots(figsize=(10, 6))
+surv_func.plot(ax=ax, title="Funkcja przeżycia dla 1 obserwacji - LogNormal model")
+ax.set_xlabel("Time (days)")
+ax.set_ylabel("Survival probability")
+ax.grid(True)
+plt.show()
+
+# %%
+#wykresy partial effects on outcome
+fig, ax = plt.subplots(figsize=(10, 6))
+ln_aft.plot_partial_effects_on_outcome('sex', (0, 1), cmap='coolwarm', ax=ax)
+ax.set_title('Wpływ płci na czas przeżycia')
+plt.show()
+
+# %%
+fig, ax = plt.subplots(figsize=(10, 6))
+ln_aft.plot_partial_effects_on_outcome('rx', (1,3), cmap='coolwarm', ax=ax)
+ax.set_title('Wpływ leczenia na czas przeżycia')
+plt.show()
+
+# %%
+fig, ax = plt.subplots(figsize=(10, 6))
+ln_aft.plot_partial_effects_on_outcome('differ_3',(0,1), cmap='coolwarm', ax=ax)
+ax.set_title('Wpływ zróżnicowania histologicznego na czas przeżycia')
+plt.show()
+
+# %%
+fig, ax = plt.subplots(figsize=(10, 6))
+ln_aft.plot_partial_effects_on_outcome('obstruct',(0,1), cmap='coolwarm', ax=ax)
+ax.set_title('Wpływ zatykania jelita przez guza na czas przeżycia')
+plt.show()
+
+# %%
+# Funkcja hazardu 
+plt.figure(figsize=(10, 6))
+plt.plot(ln_aft.predict_cumulative_hazard(colon.iloc[0:1]))
+plt.title('Funkcja hazardu – LogNormal model')
+plt.xlabel('Time')
+plt.ylabel('Hazard')
+plt.grid(True)
+plt.legend()
+plt.show()
+
+# %%
+# Po dopasowaniu modelu AFT, uzyskujemy macierz kowariancji:
+cov_matrix = ln_aft.variance_matrix_
+
+# Konwersja macierzy kowariancji do DataFrame (czytelniejszy format)
+cov_matrix_df = pd.DataFrame(cov_matrix)
+
+# %%
+# Macierz kowariancji współczynników (jak COVB w SAS)
+print("\nMacierz kowariancji (COVB):")
+print(cov_matrix_df)
 
 # %% [markdown]
 # ## Analiza semiparametryczna - model parametrycznych hazardów Coxa
@@ -563,12 +691,15 @@ cph.print_summary()
 cph.check_assumptions(colon[['time', 'status', 'sex', 'rx', 'differ_3', 'obstruct']], p_value_threshold=0.05, show_plots= True)
 
 # %% [markdown]
-# Założenie proporcjonalnych hazardów nie jest spełnione dla zmiennej differ_3. Z tego powodu wprowadzamy do modelu zależność tej zmiennej od czasu.
+# Założenie proporcjonalnych hazardów nie jest spełnione dla zmiennej differ_3. Aby skorygować model proporcjonalnych hazardów tak, aby uwzględniał nieproporcjonalne bazowe funkcje hazardu dla zmiennej differ_3 możemy spróbować stratyfikacji. Stratyfikacja generalnie polega na podziale zmiennej na podgrupy i wyestymowaniu osobnej bazowej funkcji hazardu dla każdej z nich. Zmienna differ_3 oczywiście ma tylko 2 grupy, także dla tych 2 grup estymujemy bazową funkcję hazardu.  
 
 # %%
 print(colon[['differ_3']].info())
 print(colon['differ_3'].unique())
 print(colon['differ_3'].isna().sum())
+
+# %% [markdown]
+# Musimy odpowiedno przygotować zmienną, tak aby poprawnie przekazać ją do funckji jako strat
 
 # %%
 colon_strat = colon.copy()
@@ -586,8 +717,16 @@ cph.fit(
 
 cph.print_summary()
 
+# %% [markdown]
+# szacowania parametrów są podobne jak w poprzednich modelach Coxa. Uwagę powinien zwrócić brak parametru dla zmiennej differ_3. Jest to spodziewane, mamy wyestymowane 2 nieproporcjonalne bazowe funkcje hazardu, więc nie mamy współczynnika określającego proporcję hazardów. 
+# Natomiast najbardziej interesuje nas, czy założenia modelu są spełnione. Sprawdzamy to za pomocą check_assumptions w pakiecie lifelines.
+#
+
 # %%
 cph.check_assumptions(colon_strat[['time', 'status', 'sex', 'rx', 'differ_3', 'obstruct']], p_value_threshold=0.05, show_plots= False)
+
+# %% [markdown]
+# Dodajemy również model ze zmienną differ_3 zależną liniowo od czasu. Żeby to zrobić trzeba najpierw odpowiednio przygotować dane
 
 # %%
 colon_tv = colon.copy()
